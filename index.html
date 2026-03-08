@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="it" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timer Meditazione</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a5f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Timer Meditazione">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Outfit', sans-serif; }
+    
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes complete-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.7); }
+      50% { box-shadow: 0 0 0 30px rgba(167, 139, 250, 0); }
+    }
+
+    @keyframes phase-change {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    .pulse-animation {
+      animation: pulse-ring 4s ease-in-out infinite;
+    }
+    
+    .breathe-animation {
+      animation: breathe 4s ease-in-out infinite;
+    }
+    
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .complete-animation {
+      animation: complete-pulse 1.5s ease-in-out infinite;
+    }
+
+    .phase-change-animation {
+      animation: phase-change 0.5s ease-out;
+    }
+    
+    .progress-ring {
+      transition: stroke-dashoffset 1s linear;
+    }
+    
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .tab-button {
+      transition: all 0.3s ease;
+    }
+
+    .tab-button.active {
+      background: rgba(255, 255, 255, 0.2);
+      border-bottom: 2px solid #a78bfa;
+    }
+
+    input[type="number"] {
+      appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      appearance: none;
+      margin: 0;
+    }
+  </style>
+ </head>
+ <body class="h-full m-0 p-0 overflow-auto">
+  <main id="app-container" class="min-h-full w-full flex flex-col items-center justify-center p-6" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d1b4e 50%, #1a1a2e 100%);">
+   <!-- Decorative Elements -->
+   <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-20 left-10 w-64 h-64 rounded-full opacity-20 float-animation" style="background: radial-gradient(circle, #6366f1 0%, transparent 70%);"></div>
+    <div class="absolute bottom-20 right-10 w-80 h-80 rounded-full opacity-15" style="background: radial-gradient(circle, #8b5cf6 0%, transparent 70%); animation: float 8s ease-in-out infinite reverse;"></div>
+   </div>
+
+   <!-- Main Content -->
+   <div class="relative z-10 flex flex-col items-center max-w-md w-full">
+    <!-- Tab Navigation -->
+    <div class="flex gap-2 mb-8 glass-effect rounded-full p-1">
+     <button onclick="switchMode('timer')" class="tab-button active px-6 py-2 rounded-full text-sm font-semibold text-white transition-all" id="timer-tab">⏱️ Timer</button>
+     <button onclick="switchMode('stopwatch')" class="tab-button px-6 py-2 rounded-full text-sm font-semibold text-white/60 hover:text-white transition-all" id="stopwatch-tab">⏰ Cronometro</button>
+     <button onclick="switchMode('tabata')" class="tab-button px-6 py-2 rounded-full text-sm font-semibold text-white/60 hover:text-white transition-all" id="tabata-tab">🔥 Tabata</button>
+    </div>
+
+    <!-- TIMER MODE -->
+    <div id="timer-mode" class="w-full">
+     <h1 id="timer-title" class="text-3xl md:text-4xl font-bold text-white mb-2 text-center tracking-tight">Meditazione</h1>
+     <p id="subtitle" class="text-white/60 text-sm mb-10 tracking-widest uppercase text-center">15 minuti di pace</p>
+     <!-- Timer Circle -->
+     <div class="relative mb-12 flex justify-center">
+      <div id="pulse-ring" class="absolute inset-0 rounded-full pulse-animation" style="background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%); transform: scale(1.3); width: 320px; height: 320px;"></div>
+      <svg class="w-72 h-72 md:w-80 md:h-80 transform -rotate-90" viewBox="0 0 200 200">
+       <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4" />
+       <circle id="progress-circle" class="progress-ring" cx="100" cy="100" r="90" fill="none" stroke="url(#gradient)" stroke-width="4" stroke-linecap="round" stroke-dasharray="565.48" stroke-dashoffset="0" />
+       <defs>
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+         <stop offset="0%" style="stop-color:#60a5fa" />
+         <stop offset="50%" style="stop-color:#a78bfa" />
+         <stop offset="100%" style="stop-color:#f472b6" />
+        </linearGradient>
+       </defs>
+      </svg>
+      <div id="timer-display" class="absolute inset-0 flex flex-col items-center justify-center breathe-animation">
+       <span id="time-text" class="text-7xl md:text-8xl font-extrabold text-white tracking-tighter" style="text-shadow: 0 0 40px rgba(139, 92, 246, 0.5);">15:00</span>
+       <span id="status-text" class="text-white/50 text-sm mt-2 tracking-wider uppercase">Pronto</span>
+      </div>
+     </div>
+     <!-- Controls -->
+     <div class="flex gap-4 mb-8 justify-center">
+      <button id="start-btn" onclick="toggleTimer()" class="group relative px-10 py-4 rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 active:scale-95" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.5);">
+       <span id="btn-text">Avvia</span>
+      </button>
+      <button id="reset-btn" onclick="resetTimer()" class="px-6 py-4 rounded-full font-semibold text-white/70 hover:text-white glass-effect transition-all duration-300 hover:scale-105 active:scale-95">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+       </svg>
+      </button>
+     </div>
+     <!-- Quick Time Presets -->
+     <div class="flex gap-3 flex-wrap justify-center" id="presets-container">
+      <button onclick="setTime(3)" class="preset-btn px-4 py-2 rounded-full text-sm text-white/60 hover:text-white glass-effect transition-all hover:scale-105">3 min</button>
+      <button onclick="setTime(5)" class="preset-btn px-4 py-2 rounded-full text-sm text-white/60 hover:text-white glass-effect transition-all hover:scale-105">5 min</button>
+      <button onclick="setTime(10)" class="preset-btn px-4 py-2 rounded-full text-sm text-white/60 hover:text-white glass-effect transition-all hover:scale-105">10 min</button>
+      <button onclick="setTime(15)" class="preset-btn px-4 py-2 rounded-full text-sm text-white/60 hover:text-white glass-effect transition-all hover:scale-105 ring-2 ring-white/30">15 min</button>
+      <button onclick="setTime(20)" class="preset-btn px-4 py-2 rounded-full text-sm text-white/60 hover:text-white glass-effect transition-all hover:scale-105">20 min</button>
+      <button onclick="setTime(30)" class="preset-btn px-4 py-2 rounded-full text-sm text-white/60 hover:text-white glass-effect transition-all hover:scale-105">30 min</button>
+     </div>
+     <p class="text-white/40 text-xs font-bold mt-8 tracking-wide text-center">by Riccardo Manzo</p>
+    </div>
+
+    <!-- STOPWATCH MODE -->
+    <div id="stopwatch-mode" class="w-full hidden">
+     <h1 id="stopwatch-title" class="text-3xl md:text-4xl font-bold text-white mb-2 text-center tracking-tight">Cronometro</h1>
+     <p id="stopwatch-subtitle" class="text-white/60 text-sm mb-10 tracking-widest uppercase text-center">Registra il tuo tempo</p>
+     <div class="relative mb-12 flex justify-center">
+      <div id="stopwatch-pulse" class="absolute inset-0 rounded-full pulse-animation" style="background: radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%); transform: scale(1.3); width: 320px; height: 320px;"></div>
+      <svg class="w-72 h-72 md:w-80 md:h-80 transform -rotate-90" viewBox="0 0 200 200">
+       <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4" />
+       <circle id="stopwatch-progress" cx="100" cy="100" r="90" fill="none" stroke="#22c55e" stroke-width="4" stroke-linecap="round" stroke-dasharray="565.48" stroke-dashoffset="565.48" />
+      </svg>
+      <div id="stopwatch-display" class="absolute inset-0 flex flex-col items-center justify-center breathe-animation">
+       <span id="stopwatch-time" class="text-7xl md:text-8xl font-extrabold text-white tracking-tighter" style="text-shadow: 0 0 40px rgba(34, 197, 94, 0.5);">00:00</span>
+       <span id="stopwatch-status" class="text-white/50 text-sm mt-2 tracking-wider uppercase">Pronto</span>
+      </div>
+     </div>
+     <!-- Stopwatch Controls -->
+     <div class="flex gap-4 mb-8 justify-center">
+      <button id="stopwatch-start-btn" onclick="toggleStopwatch()" class="group relative px-10 py-4 rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 active:scale-95" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; box-shadow: 0 10px 40px -10px rgba(34, 197, 94, 0.5);">
+       <span id="stopwatch-btn-text">Avvia</span>
+      </button>
+      <button onclick="addLap()" class="px-6 py-4 rounded-full font-semibold text-white/70 hover:text-white glass-effect transition-all duration-300 hover:scale-105 active:scale-95" title="Giro">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+       </svg>
+      </button>
+      <button id="stopwatch-reset-btn" onclick="resetStopwatch()" class="px-6 py-4 rounded-full font-semibold text-white/70 hover:text-white glass-effect transition-all duration-300 hover:scale-105 active:scale-95">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+       </svg>
+      </button>
+     </div>
+     <!-- Laps -->
+     <div id="laps-container" class="glass-effect rounded-2xl p-4 max-h-48 overflow-y-auto">
+      <p id="no-laps" class="text-white/40 text-center text-sm">Nessun giro registrato</p>
+     </div>
+     <p class="text-white/40 text-xs font-bold mt-8 tracking-wide text-center">by Riccardo Manzo</p>
+    </div>
+
+    <!-- TABATA MODE -->
+    <div id="tabata-mode" class="w-full hidden">
+     <h1 class="text-3xl md:text-4xl font-bold text-white mb-2 text-center tracking-tight">Tabata</h1>
+     <p id="tabata-subtitle" class="text-white/60 text-sm mb-6 tracking-widest uppercase text-center">Personalizza il tuo allenamento</p>
+     <!-- Tabata Settings -->
+     <div id="tabata-settings" class="mb-8 glass-effect rounded-2xl p-6 space-y-4">
+      <div class="grid grid-cols-3 gap-4">
+       <div class="text-center">
+        <label class="text-white/60 text-xs uppercase tracking-wider block mb-2">Lavoro (s)</label>
+        <div class="flex items-center justify-center gap-2">
+         <button onclick="adjustTabata('work', -5)" class="w-8 h-8 rounded-full text-white/60 hover:text-white transition-all" style="background: rgba(255,255,255,0.1);">−</button>
+         <input type="number" id="tabata-work-input" value="20" class="w-12 text-center bg-transparent text-white font-bold border-b border-white/30 focus:border-white outline-none" min="1" max="120" onchange="updateTabataSettings()">
+         <button onclick="adjustTabata('work', 5)" class="w-8 h-8 rounded-full text-white/60 hover:text-white transition-all" style="background: rgba(255,255,255,0.1);">+</button>
+        </div>
+       </div>
+       <div class="text-center">
+        <label class="text-white/60 text-xs uppercase tracking-wider block mb-2">Riposo (s)</label>
+        <div class="flex items-center justify-center gap-2">
+         <button onclick="adjustTabata('rest', -5)" class="w-8 h-8 rounded-full text-white/60 hover:text-white transition-all" style="background: rgba(255,255,255,0.1);">−</button>
+         <input type="number" id="tabata-rest-input" value="10" class="w-12 text-center bg-transparent text-white font-bold border-b border-white/30 focus:border-white outline-none" min="1" max="120" onchange="updateTabataSettings()">
+         <button onclick="adjustTabata('rest', 5)" class="w-8 h-8 rounded-full text-white/60 hover:text-white transition-all" style="background: rgba(255,255,255,0.1);">+</button>
+        </div>
+       </div>
+       <div class="text-center">
+        <label class="text-white/60 text-xs uppercase tracking-wider block mb-2">Round</label>
+        <div class="flex items-center justify-center gap-2">
+         <button onclick="adjustTabata('rounds', -1)" class="w-8 h-8 rounded-full text-white/60 hover:text-white transition-all" style="background: rgba(255,255,255,0.1);">−</button>
+         <input type="number" id="tabata-rounds-input" value="8" class="w-12 text-center bg-transparent text-white font-bold border-b border-white/30 focus:border-white outline-none" min="1" max="20" onchange="updateTabataSettings()">
+         <button onclick="adjustTabata('rounds', 1)" class="w-8 h-8 rounded-full text-white/60 hover:text-white transition-all" style="background: rgba(255,255,255,0.1);">+</button>
+        </div>
+       </div>
+      </div>
+     </div>
+     <!-- Tabata Circle -->
+     <div class="relative mb-8 flex justify-center">
+      <div id="tabata-pulse" class="absolute inset-0 rounded-full pulse-animation" style="background: radial-gradient(circle, rgba(239, 68, 68, 0.3) 0%, transparent 70%); transform: scale(1.3); width: 320px; height: 320px;"></div>
+      <svg class="w-72 h-72 md:w-80 md:h-80 transform -rotate-90" viewBox="0 0 200 200">
+       <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4" />
+       <circle id="tabata-progress" cx="100" cy="100" r="90" fill="none" stroke="#ef4444" stroke-width="4" stroke-linecap="round" stroke-dasharray="565.48" stroke-dashoffset="0" />
+      </svg>
+      <div id="tabata-display" class="absolute inset-0 flex flex-col items-center justify-center breathe-animation">
+       <span id="tabata-time" class="text-7xl md:text-8xl font-extrabold text-white tracking-tighter" style="text-shadow: 0 0 40px rgba(239, 68, 68, 0.5);">20</span>
+       <span id="tabata-phase" class="text-white/50 text-sm mt-2 tracking-wider uppercase">Lavoro</span>
+       <span id="tabata-round" class="text-white/40 text-xs mt-1">Round 1/8</span>
+      </div>
+     </div>
+     <!-- Tabata Progress Bar -->
+     <div class="mb-8 w-full px-4">
+      <div class="flex gap-1" id="tabata-rounds-display"></div>
+     </div>
+     <!-- Tabata Controls -->
+     <div class="flex gap-4 justify-center">
+      <button id="tabata-start-btn" onclick="toggleTabata()" class="group relative px-10 py-4 rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 active:scale-95" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; box-shadow: 0 10px 40px -10px rgba(239, 68, 68, 0.5);">
+       <span id="tabata-btn-text">Avvia</span>
+      </button>
+      <button id="tabata-reset-btn" onclick="resetTabata()" class="px-6 py-4 rounded-full font-semibold text-white/70 hover:text-white glass-effect transition-all duration-300 hover:scale-105 active:scale-95">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+       </svg>
+      </button>
+     </div>
+     <p class="text-white/40 text-xs font-bold mt-8 tracking-wide text-center">by Riccardo Manzo</p>
+    </div>
+
+    <!-- Completion Message -->
+    <div id="complete-message" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+     <div class="glass-effect rounded-3xl p-10 text-center complete-animation">
+      <div class="text-6xl mb-4" id="complete-emoji">🧘</div>
+      <h2 id="complete-title" class="text-2xl font-bold text-white mb-2">Sessione Completata</h2>
+      <p id="complete-subtitle" class="text-white/60 mb-6">Ottimo lavoro! Namaste 🙏</p>
+      <button onclick="closeComplete()" class="px-8 py-3 rounded-full font-semibold text-white transition-all hover:scale-105" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">Chiudi</button>
+     </div>
+    </div>
+   </div>
+  </main>
+
+  <script>
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+      });
+    }
+
+    // ============ AUDIO ============
+    function playBeep(frequency = 800, duration = 200) {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
+        gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration / 1000);
+      } catch(e) {}
+    }
+
+    function playDoubleBeep() {
+      playBeep(900, 150);
+      setTimeout(() => playBeep(1100, 200), 200);
+    }
+
+    function playTripleBeep() {
+      playBeep(700, 150);
+      setTimeout(() => playBeep(900, 150), 200);
+      setTimeout(() => playBeep(1100, 300), 400);
+    }
+
+    // ============ MODE SWITCHING ============
+    let currentMode = 'timer';
+
+    function switchMode(mode) {
+      currentMode = mode;
+      document.getElementById('timer-mode').classList.toggle('hidden', mode !== 'timer');
+      document.getElementById('stopwatch-mode').classList.toggle('hidden', mode !== 'stopwatch');
+      document.getElementById('tabata-mode').classList.toggle('hidden', mode !== 'tabata');
+
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+        btn.classList.add('text-white/60');
+        btn.classList.remove('text-white');
+      });
+      document.getElementById(mode === 'stopwatch' ? 'stopwatch-tab' : mode === 'tabata' ? 'tabata-tab' : 'timer-tab').classList.add('active', 'text-white');
+    }
+
+    // ============ TIMER ============
+    let totalSeconds = 15 * 60;
+    let remainingSeconds = totalSeconds;
+    let timerRunning = false;
+    let timerInterval = null;
+    const circumference = 565.48;
+
+    function formatTime(secs) {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById('time-text').textContent = formatTime(remainingSeconds);
+      const progress = 1 - (remainingSeconds / totalSeconds);
+      document.getElementById('progress-circle').style.strokeDashoffset = circumference * (1 - progress);
+    }
+
+    function setTime(minutes) {
+      if (timerRunning) return;
+      totalSeconds = minutes * 60;
+      remainingSeconds = totalSeconds;
+      document.getElementById('subtitle').textContent = `${minutes} minuti di pace`;
+      updateTimerDisplay();
+      document.getElementById('status-text').textContent = 'Pronto';
+
+      // Highlight active preset
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.classList.remove('ring-2', 'ring-white/30');
+        if (btn.textContent.trim() === `${minutes} min`) {
+          btn.classList.add('ring-2', 'ring-white/30');
+        }
+      });
+    }
+
+    function toggleTimer() {
+      if (timerRunning) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      if (remainingSeconds <= 0) {
+        remainingSeconds = totalSeconds;
+      }
+      timerRunning = true;
+      document.getElementById('btn-text').textContent = 'Pausa';
+      document.getElementById('status-text').textContent = 'In corso...';
+      document.getElementById('start-btn').style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+
+      timerInterval = setInterval(() => {
+        remainingSeconds--;
+        updateTimerDisplay();
+
+        // Beep at last 3 seconds
+        if (remainingSeconds <= 3 && remainingSeconds > 0) {
+          playBeep(600 + (3 - remainingSeconds) * 200, 150);
+        }
+
+        if (remainingSeconds <= 0) {
+          clearInterval(timerInterval);
+          timerRunning = false;
+          playTripleBeep();
+          document.getElementById('status-text').textContent = 'Completato!';
+          document.getElementById('btn-text').textContent = 'Avvia';
+          document.getElementById('start-btn').style.background = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)';
+          showComplete('timer');
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      timerRunning = false;
+      clearInterval(timerInterval);
+      document.getElementById('btn-text').textContent = 'Riprendi';
+      document.getElementById('status-text').textContent = 'In pausa';
+      document.getElementById('start-btn').style.background = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)';
+    }
+
+    function resetTimer() {
+      timerRunning = false;
+      clearInterval(timerInterval);
+      remainingSeconds = totalSeconds;
+      updateTimerDisplay();
+      document.getElementById('btn-text').textContent = 'Avvia';
+      document.getElementById('status-text').textContent = 'Pronto';
+      document.getElementById('start-btn').style.background = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)';
+    }
+
+    // ============ STOPWATCH ============
+    let stopwatchMs = 0;
+    let stopwatchRunning = false;
+    let stopwatchInterval = null;
+    let laps = [];
+    let stopwatchStartTime = 0;
+    let stopwatchElapsed = 0;
+
+    function formatStopwatch(ms) {
+      const totalSecs = Math.floor(ms / 1000);
+      const m = Math.floor(totalSecs / 60);
+      const s = totalSecs % 60;
+      const cs = Math.floor((ms % 1000) / 10);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}<span class="text-4xl">.${String(cs).padStart(2, '0')}</span>`;
+    }
+
+    function updateStopwatchDisplay() {
+      document.getElementById('stopwatch-time').innerHTML = formatStopwatch(stopwatchMs);
+      // Animate ring (one full rotation per 60 seconds)
+      const secs = (stopwatchMs / 1000) % 60;
+      const progress = secs / 60;
+      document.getElementById('stopwatch-progress').style.strokeDashoffset = circumference * (1 - progress);
+    }
+
+    function toggleStopwatch() {
+      if (stopwatchRunning) {
+        pauseStopwatch();
+      } else {
+        startStopwatch();
+      }
+    }
+
+    function startStopwatch() {
+      stopwatchRunning = true;
+      document.getElementById('stopwatch-btn-text').textContent = 'Pausa';
+      document.getElementById('stopwatch-status').textContent = 'In corso...';
+      document.getElementById('stopwatch-start-btn').style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+
+      stopwatchStartTime = Date.now() - stopwatchMs;
+      stopwatchInterval = setInterval(() => {
+        stopwatchMs = Date.now() - stopwatchStartTime;
+        updateStopwatchDisplay();
+      }, 30);
+    }
+
+    function pauseStopwatch() {
+      stopwatchRunning = false;
+      clearInterval(stopwatchInterval);
+      document.getElementById('stopwatch-btn-text').textContent = 'Riprendi';
+      document.getElementById('stopwatch-status').textContent = 'In pausa';
+      document.getElementById('stopwatch-start-btn').style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)';
+    }
+
+    function resetStopwatch() {
+      stopwatchRunning = false;
+      clearInterval(stopwatchInterval);
+      stopwatchMs = 0;
+      laps = [];
+      updateStopwatchDisplay();
+      document.getElementById('stopwatch-btn-text').textContent = 'Avvia';
+      document.getElementById('stopwatch-status').textContent = 'Pronto';
+      document.getElementById('stopwatch-start-btn').style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)';
+      document.getElementById('stopwatch-progress').style.strokeDashoffset = circumference;
+      renderLaps();
+    }
+
+    function addLap() {
+      if (!stopwatchRunning && stopwatchMs === 0) return;
+      const lapTime = stopwatchMs;
+      const prevTotal = laps.length > 0 ? laps[laps.length - 1].total : 0;
+      laps.push({ total: lapTime, split: lapTime - prevTotal });
+      playBeep(800, 100);
+      renderLaps();
+    }
+
+    function renderLaps() {
+      const container = document.getElementById('laps-container');
+      if (laps.length === 0) {
+        container.innerHTML = '<p class="text-white/40 text-center text-sm">Nessun giro registrato</p>';
+        return;
+      }
+      let html = '';
+      for (let i = laps.length - 1; i >= 0; i--) {
+        const totalSecs = Math.floor(laps[i].total / 1000);
+        const splitSecs = Math.floor(laps[i].split / 1000);
+        const tm = Math.floor(totalSecs / 60);
+        const ts = totalSecs % 60;
+        const tcs = Math.floor((laps[i].total % 1000) / 10);
+        const sm = Math.floor(splitSecs / 60);
+        const ss = splitSecs % 60;
+        const scs = Math.floor((laps[i].split % 1000) / 10);
+        html += `<div class="flex justify-between items-center py-2 border-b border-white/10 last:border-0">
+          <span class="text-white/60 text-sm font-semibold">Giro ${i + 1}</span>
+          <span class="text-white/40 text-xs">+${String(sm).padStart(2,'0')}:${String(ss).padStart(2,'0')}.${String(scs).padStart(2,'0')}</span>
+          <span class="text-white text-sm font-bold">${String(tm).padStart(2,'0')}:${String(ts).padStart(2,'0')}.${String(tcs).padStart(2,'0')}</span>
+        </div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    // ============ TABATA ============
+    let tabataWorkSeconds = 20;
+    let tabataRestSeconds = 10;
+    let tabataMaxRounds = 8;
+    let tabataRound = 1;
+    let tabataPhase = 'work';
+    let tabataTime = 20;
+    let tabataTotal = 20;
+    let tabataRunning = false;
+    let tabataInterval = null;
+
+    function adjustTabata(field, delta) {
+      const input = document.getElementById(`tabata-${field === 'rounds' ? 'rounds' : field}-input`);
+      let val = parseInt(input.value) + delta;
+      const min = parseInt(input.min);
+      const max = parseInt(input.max);
+      val = Math.max(min, Math.min(max, val));
+      input.value = val;
+      updateTabataSettings();
+    }
+
+    function updateTabataSettings() {
+      if (tabataRunning) return;
+      tabataWorkSeconds = parseInt(document.getElementById('tabata-work-input').value) || 20;
+      tabataRestSeconds = parseInt(document.getElementById('tabata-rest-input').value) || 10;
+      tabataMaxRounds = parseInt(document.getElementById('tabata-rounds-input').value) || 8;
+      resetTabataDisplay();
+      buildRoundsDisplay();
+    }
+
+    function buildRoundsDisplay() {
+      const container = document.getElementById('tabata-rounds-display');
+      container.innerHTML = '';
+      for (let i = 1; i <= tabataMaxRounds; i++) {
+        const div = document.createElement('div');
+        div.id = `round-${i}`;
+        div.className = 'flex-1 h-2 rounded-full glass-effect';
+        container.appendChild(div);
+      }
+    }
+
+    function resetTabataDisplay() {
+      tabataRound = 1;
+      tabataPhase = 'work';
+      tabataTime = tabataWorkSeconds;
+      tabataTotal = tabataWorkSeconds;
+      document.getElementById('tabata-time').textContent = tabataTime;
+      document.getElementById('tabata-phase').textContent = 'Lavoro';
+      document.getElementById('tabata-phase').style.color = '';
+      document.getElementById('tabata-round').textContent = `Round 1/${tabataMaxRounds}`;
+      document.getElementById('tabata-progress').style.strokeDashoffset = '0';
+      document.getElementById('tabata-progress').style.stroke = '#ef4444';
+
+      // Reset round indicators
+      for (let i = 1; i <= 20; i++) {
+        const el = document.getElementById(`round-${i}`);
+        if (el) {
+          el.style.background = '';
+          el.className = 'flex-1 h-2 rounded-full glass-effect';
+        }
+      }
+    }
+
+    function toggleTabata() {
+      if (tabataRunning) {
+        pauseTabata();
+      } else {
+        startTabata();
+      }
+    }
+
+    function startTabata() {
+      tabataRunning = true;
+      document.getElementById('tabata-btn-text').textContent = 'Pausa';
+      document.getElementById('tabata-start-btn').style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+      document.getElementById('tabata-settings').style.opacity = '0.5';
+      document.getElementById('tabata-settings').style.pointerEvents = 'none';
+
+      updateTabataPhaseDisplay();
+
+      tabataInterval = setInterval(() => {
+        tabataTime--;
+
+        // Progress ring
+        const progress = 1 - (tabataTime / tabataTotal);
+        document.getElementById('tabata-progress').style.strokeDashoffset = circumference * (1 - progress);
+        document.getElementById('tabata-time').textContent = tabataTime;
+
+        // Countdown beeps
+        if (tabataTime <= 3 && tabataTime > 0) {
+          playBeep(500 + (3 - tabataTime) * 200, 100);
+        }
+
+        if (tabataTime <= 0) {
+          if (tabataPhase === 'work') {
+            // Mark round as partially done (work complete)
+            const roundEl = document.getElementById(`round-${tabataRound}`);
+            if (roundEl) roundEl.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+
+            // Check if it's the last round - skip rest
+            if (tabataRound >= tabataMaxRounds) {
+              // Completed!
+              clearInterval(tabataInterval);
+              tabataRunning = false;
+              if (roundEl) roundEl.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+              playTripleBeep();
+              showComplete('tabata');
+              document.getElementById('tabata-btn-text').textContent = 'Avvia';
+              document.getElementById('tabata-start-btn').style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+              document.getElementById('tabata-settings').style.opacity = '1';
+              document.getElementById('tabata-settings').style.pointerEvents = '';
+              return;
+            }
+
+            // Switch to rest
+            tabataPhase = 'rest';
+            tabataTime = tabataRestSeconds;
+            tabataTotal = tabataRestSeconds;
+            playDoubleBeep();
+          } else {
+            // Rest done → mark round complete, next round work
+            const roundEl = document.getElementById(`round-${tabataRound}`);
+            if (roundEl) roundEl.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+            tabataRound++;
+            tabataPhase = 'work';
+            tabataTime = tabataWorkSeconds;
+            tabataTotal = tabataWorkSeconds;
+            playDoubleBeep();
+          }
+
+          updateTabataPhaseDisplay();
+        }
+      }, 1000);
+    }
+
+    function updateTabataPhaseDisplay() {
+      const phaseEl = document.getElementById('tabata-phase');
+      const progressEl = document.getElementById('tabata-progress');
+      const pulseEl = document.getElementById('tabata-pulse');
+      const timeEl = document.getElementById('tabata-time');
+
+      if (tabataPhase === 'work') {
+        phaseEl.textContent = '🔥 LAVORO!';
+        phaseEl.style.color = '#ef4444';
+        progressEl.style.stroke = '#ef4444';
+        pulseEl.style.background = 'radial-gradient(circle, rgba(239, 68, 68, 0.3) 0%, transparent 70%)';
+        timeEl.style.textShadow = '0 0 40px rgba(239, 68, 68, 0.5)';
+      } else {
+        phaseEl.textContent = '😮‍💨 RIPOSO';
+        phaseEl.style.color = '#22c55e';
+        progressEl.style.stroke = '#22c55e';
+        pulseEl.style.background = 'radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%)';
+        timeEl.style.textShadow = '0 0 40px rgba(34, 197, 94, 0.5)';
+      }
+
+      document.getElementById('tabata-round').textContent = `Round ${tabataRound}/${tabataMaxRounds}`;
+      document.getElementById('tabata-time').textContent = tabataTime;
+
+      // Quick pulse animation on phase change
+      const display = document.getElementById('tabata-display');
+      display.classList.add('phase-change-animation');
+      setTimeout(() => display.classList.remove('phase-change-animation'), 500);
+    }
+
+    function pauseTabata() {
+      tabataRunning = false;
+      clearInterval(tabataInterval);
+      document.getElementById('tabata-btn-text').textContent = 'Riprendi';
+      document.getElementById('tabata-start-btn').style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+    }
+
+    function resetTabata() {
+      tabataRunning = false;
+      clearInterval(tabataInterval);
+      resetTabataDisplay();
+      document.getElementById('tabata-btn-text').textContent = 'Avvia';
+      document.getElementById('tabata-start-btn').style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+      document.getElementById('tabata-settings').style.opacity = '1';
+      document.getElementById('tabata-settings').style.pointerEvents = '';
+    }
+
+    // ============ COMPLETION ============
+    function showComplete(mode) {
+      const msg = document.getElementById('complete-message');
+      const emoji = document.getElementById('complete-emoji');
+      const title = document.getElementById('complete-title');
+      const subtitle = document.getElementById('complete-subtitle');
+
+      if (mode === 'tabata') {
+        emoji.textContent = '💪';
+        title.textContent = 'Allenamento Completato!';
+        subtitle.textContent = `${tabataMaxRounds} round completati! Grande lavoro! 🔥`;
+      } else {
+        emoji.textContent = '🧘';
+        title.textContent = 'Sessione Completata';
+        subtitle.textContent = 'Ottimo lavoro! Namaste 🙏';
+      }
+
+      msg.classList.remove('hidden');
+    }
+
+    function closeComplete() {
+      document.getElementById('complete-message').classList.add('hidden');
+    }
+
+    // ============ INIT ============
+    buildRoundsDisplay();
+    updateTimerDisplay();
+  </script>
+ </body>
+</html>
