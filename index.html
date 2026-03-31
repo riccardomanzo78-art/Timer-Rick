@@ -105,10 +105,11 @@
    <!-- Main Content -->
    <div class="relative z-10 flex flex-col items-center max-w-md w-full">
     <!-- Tab Navigation -->
-    <div class="flex gap-2 mb-8 glass-effect rounded-full p-1">
-     <button onclick="switchMode('timer')" class="tab-button active px-6 py-2 rounded-full text-sm font-semibold text-white transition-all" id="timer-tab">⏱️ Timer</button>
-     <button onclick="switchMode('stopwatch')" class="tab-button px-6 py-2 rounded-full text-sm font-semibold text-white/60 hover:text-white transition-all" id="stopwatch-tab">⏰ Cronometro</button>
-     <button onclick="switchMode('tabata')" class="tab-button px-6 py-2 rounded-full text-sm font-semibold text-white/60 hover:text-white transition-all" id="tabata-tab">🔥 Tabata</button>
+    <div class="flex gap-1 mb-8 glass-effect rounded-full p-1">
+     <button onclick="switchMode('timer')" class="tab-button active px-3 py-2 rounded-full text-sm font-semibold text-white transition-all" id="timer-tab">⏱️ Timer</button>
+     <button onclick="switchMode('stopwatch')" class="tab-button px-3 py-2 rounded-full text-sm font-semibold text-white/60 hover:text-white transition-all" id="stopwatch-tab">⏰ Crono</button>
+     <button onclick="switchMode('tabata')" class="tab-button px-3 py-2 rounded-full text-sm font-semibold text-white/60 hover:text-white transition-all" id="tabata-tab">🔥 Tabata</button>
+     <button onclick="switchMode('scores')" class="tab-button px-3 py-2 rounded-full text-sm font-semibold text-white/60 hover:text-white transition-all" id="scores-tab">⭐ Punti</button>
     </div>
 
     <!-- TIMER MODE -->
@@ -259,6 +260,58 @@
      <p class="text-white/40 text-xs font-bold mt-8 tracking-wide text-center">by Riccardo Manzo</p>
     </div>
 
+    <!-- SCORES MODE -->
+    <div id="scores-mode" class="w-full hidden">
+     <h1 class="text-3xl md:text-4xl font-bold text-white mb-2 text-center tracking-tight">Punteggi</h1>
+     <p class="text-white/60 text-sm mb-6 tracking-widest uppercase text-center">Attività &amp; Progressi</p>
+
+     <!-- User selector -->
+     <div class="glass-effect rounded-2xl p-4 mb-4">
+      <div class="flex justify-between items-center mb-3">
+       <span class="text-white/60 text-xs uppercase tracking-wider">Utente</span>
+       <button onclick="showAddUser()" class="text-xs px-3 py-1 rounded-full text-white/60 hover:text-white transition-all" style="background: rgba(255,255,255,0.1)">+ Aggiungi</button>
+      </div>
+      <div id="users-list" class="flex flex-wrap gap-2">
+       <p class="text-white/40 text-sm">Nessun utente aggiunto</p>
+      </div>
+      <div id="add-user-form" class="hidden mt-3 flex gap-2 items-center">
+       <input id="new-user-name" type="text" placeholder="Nome utente..." onkeydown="if(event.key==='Enter')addUser()" class="flex-1 bg-transparent text-white border-b border-white/30 focus:border-white outline-none text-sm px-1 py-1">
+       <button onclick="addUser()" class="text-xs px-3 py-1 rounded-full text-white whitespace-nowrap" style="background: linear-gradient(135deg, #6366f1, #8b5cf6)">OK</button>
+       <button onclick="hideAddUser()" class="text-xs px-3 py-1 rounded-full text-white/60 hover:text-white transition-all" style="background: rgba(255,255,255,0.1)">✕</button>
+      </div>
+     </div>
+
+     <!-- Score panel -->
+     <div id="score-panel" class="hidden">
+      <!-- Total score -->
+      <div class="glass-effect rounded-2xl p-4 mb-4">
+       <div class="flex justify-between items-center mb-2">
+        <span class="text-white font-semibold" id="score-user-name">-</span>
+        <span class="text-white font-bold text-xl" id="score-total">0 / 20</span>
+       </div>
+       <div class="w-full h-3 rounded-full" style="background: rgba(255,255,255,0.1)">
+        <div id="score-progress-bar" class="h-3 rounded-full transition-all duration-500" style="background: linear-gradient(135deg, #6366f1, #a78bfa); width: 0%"></div>
+       </div>
+      </div>
+
+      <!-- Activities list -->
+      <div id="activities-list" class="space-y-2 mb-4">
+       <p class="text-white/40 text-center text-sm py-4">Nessuna attività aggiunta</p>
+      </div>
+
+      <!-- Add activity -->
+      <div class="glass-effect rounded-2xl p-4 mb-4">
+       <span class="text-white/60 text-xs uppercase tracking-wider">Nuova attività</span>
+       <div class="flex gap-2 mt-3 items-center">
+        <input id="new-activity-name" type="text" placeholder="Nome attività..." onkeydown="if(event.key==='Enter')addActivity()" class="flex-1 bg-transparent text-white border-b border-white/30 focus:border-white outline-none text-sm px-1 py-1">
+        <button onclick="addActivity()" class="text-xs px-3 py-1 rounded-full text-white whitespace-nowrap" style="background: linear-gradient(135deg, #6366f1, #8b5cf6)">+ Aggiungi</button>
+       </div>
+      </div>
+     </div>
+
+     <p class="text-white/40 text-xs font-bold mt-4 tracking-wide text-center">by Riccardo Manzo</p>
+    </div>
+
     <!-- Completion Message -->
     <div id="complete-message" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
      <div class="glass-effect rounded-3xl p-10 text-center complete-animation">
@@ -266,6 +319,16 @@
       <h2 id="complete-title" class="text-2xl font-bold text-white mb-2">Sessione Completata</h2>
       <p id="complete-subtitle" class="text-white/60 mb-6">Ottimo lavoro! Namaste 🙏</p>
       <button onclick="closeComplete()" class="px-8 py-3 rounded-full font-semibold text-white transition-all hover:scale-105" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">Chiudi</button>
+     </div>
+    </div>
+
+    <!-- Reinforcement Message -->
+    <div id="reinforcement-message" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+     <div class="glass-effect rounded-3xl p-10 text-center complete-animation max-w-sm mx-4">
+      <div class="text-7xl mb-4">🌟</div>
+      <h2 class="text-2xl font-bold text-white mb-2">Fantastico!</h2>
+      <p class="text-white/70 mb-6" id="reinforcement-subtitle">Hai raggiunto 20 punti! Bravissimo! 🎉</p>
+      <button onclick="closeReinforcement()" class="px-8 py-3 rounded-full font-semibold text-white transition-all hover:scale-105" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">Evviva! 🎊</button>
      </div>
     </div>
    </div>
@@ -315,13 +378,19 @@
       document.getElementById('timer-mode').classList.toggle('hidden', mode !== 'timer');
       document.getElementById('stopwatch-mode').classList.toggle('hidden', mode !== 'stopwatch');
       document.getElementById('tabata-mode').classList.toggle('hidden', mode !== 'tabata');
+      document.getElementById('scores-mode').classList.toggle('hidden', mode !== 'scores');
 
       document.querySelectorAll('.tab-button').forEach(btn => {
         btn.classList.remove('active');
         btn.classList.add('text-white/60');
         btn.classList.remove('text-white');
       });
-      document.getElementById(mode === 'stopwatch' ? 'stopwatch-tab' : mode === 'tabata' ? 'tabata-tab' : 'timer-tab').classList.add('active', 'text-white');
+      const tabIds = { timer: 'timer-tab', stopwatch: 'stopwatch-tab', tabata: 'tabata-tab', scores: 'scores-tab' };
+      const activeTab = document.getElementById(tabIds[mode] || 'timer-tab');
+      activeTab.classList.add('active', 'text-white');
+      activeTab.classList.remove('text-white/60');
+
+      if (mode === 'scores') renderScoresView();
     }
 
     // ============ TIMER ============
@@ -719,6 +788,190 @@
 
     function closeComplete() {
       document.getElementById('complete-message').classList.add('hidden');
+    }
+
+    // ============ SCORES ============
+    const SCORE_TARGET = 20;
+
+    let scoreData = (function() {
+      try {
+        const saved = localStorage.getItem('scoreData_v1');
+        if (saved) return JSON.parse(saved);
+      } catch(e) {}
+      return { users: [], activities: [], scores: {}, reinforcementShown: {} };
+    })();
+
+    let currentUser = null;
+
+    function saveScoreData() {
+      try { localStorage.setItem('scoreData_v1', JSON.stringify(scoreData)); } catch(e) {}
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function showAddUser() {
+      document.getElementById('add-user-form').classList.remove('hidden');
+      document.getElementById('new-user-name').focus();
+    }
+
+    function hideAddUser() {
+      document.getElementById('add-user-form').classList.add('hidden');
+      document.getElementById('new-user-name').value = '';
+    }
+
+    function addUser() {
+      const name = document.getElementById('new-user-name').value.trim();
+      if (!name || scoreData.users.includes(name)) return;
+      scoreData.users.push(name);
+      if (!scoreData.scores[name]) scoreData.scores[name] = {};
+      saveScoreData();
+      hideAddUser();
+      renderUsers();
+      selectUser(name);
+    }
+
+    function removeUser(name) {
+      scoreData.users = scoreData.users.filter(u => u !== name);
+      delete scoreData.scores[name];
+      delete scoreData.reinforcementShown[name];
+      saveScoreData();
+      if (currentUser === name) {
+        currentUser = null;
+        document.getElementById('score-panel').classList.add('hidden');
+      }
+      renderUsers();
+    }
+
+    function selectUser(name) {
+      currentUser = name;
+      document.getElementById('score-panel').classList.remove('hidden');
+      document.getElementById('score-user-name').textContent = name;
+      renderUsers();
+      renderActivities();
+      updateScoreDisplay();
+    }
+
+    function renderUsers() {
+      const container = document.getElementById('users-list');
+      if (scoreData.users.length === 0) {
+        container.innerHTML = '<p class="text-white/40 text-sm">Nessun utente aggiunto</p>';
+        return;
+      }
+      container.innerHTML = scoreData.users.map(u => {
+        const active = u === currentUser;
+        return `<div class="flex items-center gap-1">
+          <button onclick="selectUser(${JSON.stringify(u)})"
+            class="px-3 py-1 rounded-full text-sm font-semibold transition-all"
+            style="${active ? 'background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;' : 'background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);'}">
+            ${escapeHtml(u)}
+          </button>
+          <button onclick="removeUser(${JSON.stringify(u)})" class="text-white/20 hover:text-red-400 transition-all text-xs leading-none">✕</button>
+        </div>`;
+      }).join('');
+    }
+
+    function addActivity() {
+      const name = document.getElementById('new-activity-name').value.trim();
+      if (!name || scoreData.activities.includes(name)) return;
+      scoreData.activities.push(name);
+      saveScoreData();
+      document.getElementById('new-activity-name').value = '';
+      renderActivities();
+    }
+
+    function removeActivity(name) {
+      scoreData.activities = scoreData.activities.filter(a => a !== name);
+      Object.keys(scoreData.scores).forEach(user => { delete scoreData.scores[user][name]; });
+      // Reset reinforcement if total now drops below target
+      scoreData.users.forEach(u => {
+        if (getUserTotal(u) < SCORE_TARGET) scoreData.reinforcementShown[u] = false;
+      });
+      saveScoreData();
+      renderActivities();
+      updateScoreDisplay();
+    }
+
+    function setScore(activity, score) {
+      if (!currentUser) return;
+      if (!scoreData.scores[currentUser]) scoreData.scores[currentUser] = {};
+      const prevTotal = getUserTotal(currentUser);
+      scoreData.scores[currentUser][activity] = score;
+      const newTotal = getUserTotal(currentUser);
+      if (newTotal < SCORE_TARGET) scoreData.reinforcementShown[currentUser] = false;
+      saveScoreData();
+      renderActivities();
+      updateScoreDisplay();
+      if (newTotal >= SCORE_TARGET && prevTotal < SCORE_TARGET) {
+        scoreData.reinforcementShown[currentUser] = true;
+        saveScoreData();
+        showReinforcement(currentUser, newTotal);
+      }
+    }
+
+    function getUserTotal(user) {
+      if (!scoreData.scores[user]) return 0;
+      return Object.values(scoreData.scores[user]).reduce((s, v) => s + v, 0);
+    }
+
+    function updateScoreDisplay() {
+      if (!currentUser) return;
+      const total = getUserTotal(currentUser);
+      const pct = Math.min(100, (total / SCORE_TARGET) * 100);
+      document.getElementById('score-total').textContent = `${total} / ${SCORE_TARGET}`;
+      document.getElementById('score-progress-bar').style.width = `${pct}%`;
+      document.getElementById('score-progress-bar').style.background =
+        total >= SCORE_TARGET
+          ? 'linear-gradient(135deg, #22c55e, #16a34a)'
+          : 'linear-gradient(135deg, #6366f1, #a78bfa)';
+    }
+
+    function renderActivities() {
+      const container = document.getElementById('activities-list');
+      if (scoreData.activities.length === 0) {
+        container.innerHTML = '<p class="text-white/40 text-center text-sm py-4">Nessuna attività aggiunta</p>';
+        return;
+      }
+      const userScores = currentUser ? (scoreData.scores[currentUser] || {}) : {};
+      container.innerHTML = scoreData.activities.map(activity => {
+        const cur = userScores[activity] || 0;
+        const stars = [1,2,3,4,5].map(s =>
+          `<button onclick="setScore(${JSON.stringify(activity)}, ${s})"
+            class="text-2xl transition-all hover:scale-110 active:scale-95"
+            title="${s} ${s===1?'stella':'stelle'}">${s <= cur ? '⭐' : '☆'}</button>`
+        ).join('');
+        return `<div class="glass-effect rounded-2xl p-4">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-white font-semibold text-sm">${escapeHtml(activity)}</span>
+            <span class="flex items-center gap-2">
+              <span class="text-white/40 text-xs">${cur > 0 ? cur + '/5' : ''}</span>
+              <button onclick="removeActivity(${JSON.stringify(activity)})" class="text-white/20 hover:text-red-400 transition-all text-xs">✕</button>
+            </span>
+          </div>
+          <div class="flex gap-1 justify-center">${stars}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderScoresView() {
+      renderUsers();
+      if (currentUser) {
+        document.getElementById('score-panel').classList.remove('hidden');
+        document.getElementById('score-user-name').textContent = currentUser;
+        renderActivities();
+        updateScoreDisplay();
+      }
+    }
+
+    function showReinforcement(user, total) {
+      document.getElementById('reinforcement-subtitle').textContent =
+        `${user} ha raggiunto ${total} punti! Bravissimo! 🎉`;
+      document.getElementById('reinforcement-message').classList.remove('hidden');
+    }
+
+    function closeReinforcement() {
+      document.getElementById('reinforcement-message').classList.add('hidden');
     }
 
     // ============ INIT ============
