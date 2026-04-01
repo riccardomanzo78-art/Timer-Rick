@@ -862,12 +862,12 @@
       container.innerHTML = scoreData.users.map(u => {
         const active = u === currentUser;
         return `<div class="flex items-center gap-1">
-          <button onclick="selectUser(${JSON.stringify(u)})"
+          <button onclick="selectUser(${escapeHtml(JSON.stringify(u))})"
             class="px-3 py-1 rounded-full text-sm font-semibold transition-all"
             style="${active ? 'background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;' : 'background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);'}">
             ${escapeHtml(u)}
           </button>
-          <button onclick="removeUser(${JSON.stringify(u)})" class="text-white/20 hover:text-red-400 transition-all text-xs leading-none">✕</button>
+          <button onclick="removeUser(${escapeHtml(JSON.stringify(u))})" class="text-white/20 hover:text-red-400 transition-all text-xs leading-none">✕</button>
         </div>`;
       }).join('');
     }
@@ -936,8 +936,9 @@
       const userScores = currentUser ? (scoreData.scores[currentUser] || {}) : {};
       container.innerHTML = scoreData.activities.map(activity => {
         const cur = userScores[activity] || 0;
+        const safeActivity = escapeHtml(JSON.stringify(activity));
         const stars = [1,2,3,4,5].map(s =>
-          `<button onclick="setScore(${JSON.stringify(activity)}, ${s})"
+          `<button onclick="setScore(${safeActivity}, ${s})"
             class="text-2xl transition-all hover:scale-110 active:scale-95"
             title="${s} ${s===1?'stella':'stelle'}">${s <= cur ? '⭐' : '☆'}</button>`
         ).join('');
@@ -946,7 +947,7 @@
             <span class="text-white font-semibold text-sm">${escapeHtml(activity)}</span>
             <span class="flex items-center gap-2">
               <span class="text-white/40 text-xs">${cur > 0 ? cur + '/5' : ''}</span>
-              <button onclick="removeActivity(${JSON.stringify(activity)})" class="text-white/20 hover:text-red-400 transition-all text-xs">✕</button>
+              <button onclick="removeActivity(${safeActivity})" class="text-white/20 hover:text-red-400 transition-all text-xs">✕</button>
             </span>
           </div>
           <div class="flex gap-1 justify-center">${stars}</div>
