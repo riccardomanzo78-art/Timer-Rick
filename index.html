@@ -269,7 +269,11 @@
      <div class="glass-effect rounded-2xl p-4 mb-4">
       <div class="flex justify-between items-center mb-3">
        <span class="text-white/60 text-xs uppercase tracking-wider">Utente</span>
-       <button onclick="showAddUser()" class="text-xs px-3 py-1 rounded-full text-white/60 hover:text-white transition-all" style="background: rgba(255,255,255,0.1)">+ Aggiungi</button>
+       <div class="flex gap-2">
+        <button onclick="exportData()" class="text-xs px-3 py-1 rounded-full text-white/60 hover:text-white transition-all" style="background: rgba(255,255,255,0.1)" title="Esporta dati">💾</button>
+        <label class="text-xs px-3 py-1 rounded-full text-white/60 hover:text-white transition-all cursor-pointer" style="background: rgba(255,255,255,0.1)" title="Importa dati">📂<input type="file" accept=".json" onchange="importData(event)" class="hidden"></label>
+        <button onclick="showAddUser()" class="text-xs px-3 py-1 rounded-full text-white/60 hover:text-white transition-all" style="background: rgba(255,255,255,0.1)">+ Aggiungi</button>
+       </div>
       </div>
       <div id="users-list" class="flex flex-wrap gap-2">
        <p class="text-white/40 text-sm">Nessun utente aggiunto</p>
@@ -283,29 +287,53 @@
 
      <!-- Score panel -->
      <div id="score-panel" class="hidden">
-      <!-- Total score -->
+      <!-- Total score + tokens -->
       <div class="glass-effect rounded-2xl p-4 mb-4">
        <div class="flex justify-between items-center mb-2">
         <span class="text-white font-semibold" id="score-user-name">-</span>
-        <span class="text-white font-bold text-xl" id="score-total">0 / 20</span>
+        <div class="flex items-center gap-3">
+         <button onclick="resetUserScores()" class="text-xs px-2 py-1 rounded-full text-white/40 hover:text-red-400 transition-all" style="background:rgba(255,255,255,0.05)" title="Azzera punteggi">↺ Reset</button>
+         <span class="text-white font-bold" id="score-total">0 pt</span>
+        </div>
        </div>
-       <div class="w-full h-3 rounded-full" style="background: rgba(255,255,255,0.1)">
+       <div class="w-full h-3 rounded-full mb-3" style="background: rgba(255,255,255,0.1)">
         <div id="score-progress-bar" class="h-3 rounded-full transition-all duration-500" style="background: linear-gradient(135deg, #6366f1, #a78bfa); width: 0%"></div>
        </div>
+       <div id="token-display" class="flex flex-wrap gap-1 min-h-6"></div>
       </div>
 
-      <!-- Activities list -->
-      <div id="activities-list" class="space-y-2 mb-4">
-       <p class="text-white/40 text-center text-sm py-4">Nessuna attività aggiunta</p>
+      <!-- Sub-tabs -->
+      <div class="flex gap-1 mb-4 glass-effect rounded-full p-1">
+       <button onclick="switchScoreTab('activities')" id="tab-activities" class="score-tab flex-1 py-1.5 rounded-full text-xs font-semibold text-white transition-all" style="background: rgba(255,255,255,0.2)">Attività</button>
+       <button onclick="switchScoreTab('history')" id="tab-history" class="score-tab flex-1 py-1.5 rounded-full text-xs font-semibold text-white/60 hover:text-white transition-all">Storico</button>
       </div>
 
-      <!-- Add activity -->
-      <div class="glass-effect rounded-2xl p-4 mb-4">
-       <span class="text-white/60 text-xs uppercase tracking-wider">Nuova attività</span>
-       <div class="flex gap-2 mt-3 items-center">
-        <input id="new-activity-name" type="text" placeholder="Nome attività..." onkeydown="if(event.key==='Enter')addActivity()" class="flex-1 bg-transparent text-white border-b border-white/30 focus:border-white outline-none text-sm px-1 py-1">
-        <button onclick="addActivity()" class="text-xs px-3 py-1 rounded-full text-white whitespace-nowrap" style="background: linear-gradient(135deg, #6366f1, #8b5cf6)">+ Aggiungi</button>
+      <!-- Activities view -->
+      <div id="score-activities-view">
+       <div id="activities-list" class="space-y-2 mb-4">
+        <p class="text-white/40 text-center text-sm py-4">Nessuna attività aggiunta</p>
        </div>
+       <div class="glass-effect rounded-2xl p-4 mb-4">
+        <span class="text-white/60 text-xs uppercase tracking-wider">Nuova attività</span>
+        <div class="flex gap-2 mt-3 items-center">
+         <input id="new-activity-emoji" type="text" placeholder="🎯" maxlength="2" class="w-10 text-center bg-transparent text-white border-b border-white/30 focus:border-white outline-none text-sm px-1 py-1">
+         <input id="new-activity-name" type="text" placeholder="Nome attività..." onkeydown="if(event.key==='Enter')addActivity()" class="flex-1 bg-transparent text-white border-b border-white/30 focus:border-white outline-none text-sm px-1 py-1">
+        </div>
+        <div class="flex gap-2 mt-2 items-center">
+         <input id="new-activity-category" type="text" placeholder="Categoria (opzionale)..." class="flex-1 bg-transparent text-white/60 border-b border-white/20 focus:border-white outline-none text-xs px-1 py-1">
+         <button onclick="addActivity()" class="text-xs px-3 py-1 rounded-full text-white whitespace-nowrap" style="background: linear-gradient(135deg, #6366f1, #8b5cf6)">+ Aggiungi</button>
+        </div>
+       </div>
+      </div>
+
+      <!-- History view -->
+      <div id="score-history-view" class="hidden">
+       <div class="glass-effect rounded-2xl p-4 mb-4">
+        <span class="text-white/60 text-xs uppercase tracking-wider block mb-4">Ultimi 7 giorni</span>
+        <div id="history-chart" class="flex items-end gap-1 h-24 w-full"></div>
+        <div id="history-dates" class="flex gap-1 mt-1 w-full"></div>
+       </div>
+       <div id="history-list" class="space-y-2"></div>
       </div>
      </div>
 
@@ -793,24 +821,74 @@
     // ============ SCORES ============
     const SCORE_TARGET = 20;
 
-    let scoreData = (function() {
+    function loadScoreData() {
       try {
-        const saved = localStorage.getItem('scoreData_v1');
-        if (saved) return JSON.parse(saved);
+        const v2 = localStorage.getItem('scoreData_v2');
+        if (v2) return JSON.parse(v2);
+        // Migrate from v1
+        const v1raw = localStorage.getItem('scoreData_v1');
+        if (v1raw) {
+          const v1 = JSON.parse(v1raw);
+          const v2data = {
+            users: v1.users || [],
+            activities: (v1.activities || []).map((name, i) => ({
+              id: 'a_' + i + '_' + Date.now(), name, emoji: '📌', category: ''
+            })),
+            scores: {}, history: {}, reinforcementLevel: {}
+          };
+          (v1.users || []).forEach(u => {
+            v2data.scores[u] = {};
+            if (v1.scores && v1.scores[u]) {
+              v2data.activities.forEach(act => {
+                if (v1.scores[u][act.name] !== undefined)
+                  v2data.scores[u][act.id] = v1.scores[u][act.name];
+              });
+            }
+            v2data.history[u] = [];
+            v2data.reinforcementLevel[u] = 0;
+          });
+          return v2data;
+        }
       } catch(e) {}
-      return { users: [], activities: [], scores: {}, reinforcementShown: {} };
-    })();
+      return { users: [], activities: [], scores: {}, history: {}, reinforcementLevel: {} };
+    }
 
+    let scoreData = loadScoreData();
     let currentUser = null;
+    let currentScoreTab = 'activities';
 
     function saveScoreData() {
-      try { localStorage.setItem('scoreData_v1', JSON.stringify(scoreData)); } catch(e) {}
+      try { localStorage.setItem('scoreData_v2', JSON.stringify(scoreData)); } catch(e) {}
     }
 
     function escapeHtml(str) {
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    // ---- Audio ----
+    function playReinforcement() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        [523, 659, 784, 1047].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.frequency.value = freq; osc.type = 'sine';
+          const t = ctx.currentTime + i * 0.15;
+          gain.gain.setValueAtTime(0, t);
+          gain.gain.linearRampToValueAtTime(0.3, t + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+          osc.start(t); osc.stop(t + 0.3);
+        });
+      } catch(e) {}
+    }
+
+    function playScoreSound(score) {
+      playBeep(400 + score * 100, 100);
+      if (score >= 4) setTimeout(() => playBeep(500 + score * 125, 80), 130);
+    }
+
+    // ---- Users ----
     function showAddUser() {
       document.getElementById('add-user-form').classList.remove('hidden');
       document.getElementById('new-user-name').focus();
@@ -825,7 +903,9 @@
       const name = document.getElementById('new-user-name').value.trim();
       if (!name || scoreData.users.includes(name)) return;
       scoreData.users.push(name);
-      if (!scoreData.scores[name]) scoreData.scores[name] = {};
+      scoreData.scores[name] = {};
+      scoreData.history[name] = [];
+      scoreData.reinforcementLevel[name] = 0;
       saveScoreData();
       hideAddUser();
       renderUsers();
@@ -835,7 +915,8 @@
     function removeUser(name) {
       scoreData.users = scoreData.users.filter(u => u !== name);
       delete scoreData.scores[name];
-      delete scoreData.reinforcementShown[name];
+      delete scoreData.history[name];
+      delete scoreData.reinforcementLevel[name];
       saveScoreData();
       if (currentUser === name) {
         currentUser = null;
@@ -851,6 +932,17 @@
       renderUsers();
       renderActivities();
       updateScoreDisplay();
+      if (currentScoreTab === 'history') renderHistory();
+    }
+
+    function resetUserScores() {
+      if (!currentUser) return;
+      if (!confirm('Azzera tutti i punteggi di ' + currentUser + '?')) return;
+      scoreData.scores[currentUser] = {};
+      scoreData.reinforcementLevel[currentUser] = 0;
+      saveScoreData();
+      renderActivities();
+      updateScoreDisplay();
     }
 
     function renderUsers() {
@@ -861,52 +953,69 @@
       }
       container.innerHTML = scoreData.users.map(u => {
         const active = u === currentUser;
+        const total = getUserTotal(u);
         return `<div class="flex items-center gap-1">
           <button onclick="selectUser(${escapeHtml(JSON.stringify(u))})"
             class="px-3 py-1 rounded-full text-sm font-semibold transition-all"
             style="${active ? 'background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;' : 'background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);'}">
-            ${escapeHtml(u)}
+            ${escapeHtml(u)} <span style="font-size:0.7em;opacity:0.7">${total}pt</span>
           </button>
           <button onclick="removeUser(${escapeHtml(JSON.stringify(u))})" class="text-white/20 hover:text-red-400 transition-all text-xs leading-none">✕</button>
         </div>`;
       }).join('');
     }
 
+    // ---- Activities ----
+    function genId() { return 'a_' + Math.random().toString(36).slice(2, 9); }
+
     function addActivity() {
       const name = document.getElementById('new-activity-name').value.trim();
-      if (!name || scoreData.activities.includes(name)) return;
-      scoreData.activities.push(name);
+      if (!name || scoreData.activities.some(a => a.name === name)) return;
+      const emoji = document.getElementById('new-activity-emoji').value.trim() || '📌';
+      const category = document.getElementById('new-activity-category').value.trim();
+      scoreData.activities.push({ id: genId(), name, emoji, category });
       saveScoreData();
       document.getElementById('new-activity-name').value = '';
+      document.getElementById('new-activity-emoji').value = '';
+      document.getElementById('new-activity-category').value = '';
       renderActivities();
     }
 
-    function removeActivity(name) {
-      scoreData.activities = scoreData.activities.filter(a => a !== name);
-      Object.keys(scoreData.scores).forEach(user => { delete scoreData.scores[user][name]; });
-      // Reset reinforcement if total now drops below target
+    function removeActivity(id) {
+      scoreData.activities = scoreData.activities.filter(a => a.id !== id);
+      Object.keys(scoreData.scores).forEach(u => { delete scoreData.scores[u][id]; });
       scoreData.users.forEach(u => {
-        if (getUserTotal(u) < SCORE_TARGET) scoreData.reinforcementShown[u] = false;
+        const level = Math.floor(getUserTotal(u) / SCORE_TARGET);
+        if (level < (scoreData.reinforcementLevel[u] || 0))
+          scoreData.reinforcementLevel[u] = level;
       });
       saveScoreData();
       renderActivities();
       updateScoreDisplay();
     }
 
-    function setScore(activity, score) {
+    function setScore(actId, score) {
       if (!currentUser) return;
       if (!scoreData.scores[currentUser]) scoreData.scores[currentUser] = {};
       const prevTotal = getUserTotal(currentUser);
-      scoreData.scores[currentUser][activity] = score;
+      scoreData.scores[currentUser][actId] = score;
       const newTotal = getUserTotal(currentUser);
-      if (newTotal < SCORE_TARGET) scoreData.reinforcementShown[currentUser] = false;
+      playScoreSound(score);
+      saveHistorySnapshot(currentUser, newTotal);
       saveScoreData();
       renderActivities();
       updateScoreDisplay();
-      if (newTotal >= SCORE_TARGET && prevTotal < SCORE_TARGET) {
-        scoreData.reinforcementShown[currentUser] = true;
+      // Milestone every SCORE_TARGET points
+      const prevLevel = Math.floor(prevTotal / SCORE_TARGET);
+      const newLevel = Math.floor(newTotal / SCORE_TARGET);
+      if (newLevel > prevLevel && newLevel > (scoreData.reinforcementLevel[currentUser] || 0)) {
+        scoreData.reinforcementLevel[currentUser] = newLevel;
         saveScoreData();
-        showReinforcement(currentUser, newTotal);
+        showReinforcement(currentUser, newTotal, newLevel * SCORE_TARGET);
+      }
+      if (newTotal < prevTotal) {
+        scoreData.reinforcementLevel[currentUser] = Math.floor(newTotal / SCORE_TARGET);
+        saveScoreData();
       }
     }
 
@@ -918,13 +1027,25 @@
     function updateScoreDisplay() {
       if (!currentUser) return;
       const total = getUserTotal(currentUser);
-      const pct = Math.min(100, (total / SCORE_TARGET) * 100);
-      document.getElementById('score-total').textContent = `${total} / ${SCORE_TARGET}`;
+      const level = Math.floor(total / SCORE_TARGET);
+      const progress = total % SCORE_TARGET;
+      const pct = Math.min(100, (progress / SCORE_TARGET) * 100);
+      const nextMilestone = (level + 1) * SCORE_TARGET;
+      document.getElementById('score-total').textContent = `${total} pt → 🎯 ${nextMilestone}`;
       document.getElementById('score-progress-bar').style.width = `${pct}%`;
       document.getElementById('score-progress-bar').style.background =
-        total >= SCORE_TARGET
+        progress === 0 && total > 0
           ? 'linear-gradient(135deg, #22c55e, #16a34a)'
           : 'linear-gradient(135deg, #6366f1, #a78bfa)';
+      // Tokens: 1 per ogni 5 punti
+      const tokens = Math.floor(total / 5);
+      const tokenEl = document.getElementById('token-display');
+      tokenEl.innerHTML = tokens === 0
+        ? '<span class="text-white/30 text-xs">Guadagna le prime stelle!</span>'
+        : Array.from({length: Math.min(tokens, 20)}, (_, i) =>
+            `<span class="text-lg" style="animation:float ${2+(i%3)*0.5}s ease-in-out infinite;animation-delay:${i*0.08}s">⭐</span>`
+          ).join('') + (tokens > 20 ? `<span class="text-white/50 text-sm ml-1">+${tokens-20}</span>` : '');
+      renderUsers();
     }
 
     function renderActivities() {
@@ -934,45 +1055,157 @@
         return;
       }
       const userScores = currentUser ? (scoreData.scores[currentUser] || {}) : {};
-      container.innerHTML = scoreData.activities.map(activity => {
-        const cur = userScores[activity] || 0;
-        const safeActivity = escapeHtml(JSON.stringify(activity));
-        const stars = [1,2,3,4,5].map(s =>
-          `<button onclick="setScore(${safeActivity}, ${s})"
-            class="text-2xl transition-all hover:scale-110 active:scale-95"
-            title="${s} ${s===1?'stella':'stelle'}">${s <= cur ? '⭐' : '☆'}</button>`
-        ).join('');
-        return `<div class="glass-effect rounded-2xl p-4">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-white font-semibold text-sm">${escapeHtml(activity)}</span>
-            <span class="flex items-center gap-2">
-              <span class="text-white/40 text-xs">${cur > 0 ? cur + '/5' : ''}</span>
-              <button onclick="removeActivity(${safeActivity})" class="text-white/20 hover:text-red-400 transition-all text-xs">✕</button>
-            </span>
-          </div>
-          <div class="flex gap-1 justify-center">${stars}</div>
+      // Group by category
+      const groups = {};
+      scoreData.activities.forEach(act => {
+        const cat = act.category || '';
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(act);
+      });
+      let html = '';
+      Object.entries(groups).forEach(([cat, acts]) => {
+        if (cat) html += `<p class="text-white/40 text-xs uppercase tracking-wider px-1 mt-3 mb-1">${escapeHtml(cat)}</p>`;
+        acts.forEach(act => {
+          const cur = userScores[act.id] || 0;
+          const safeId = escapeHtml(JSON.stringify(act.id));
+          const stars = [1,2,3,4,5].map(s =>
+            `<button onclick="setScore(${safeId},${s})" class="text-2xl transition-all hover:scale-110 active:scale-95" title="${s} ${s===1?'stella':'stelle'}">${s<=cur?'⭐':'☆'}</button>`
+          ).join('');
+          html += `<div class="glass-effect rounded-2xl p-4">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-white font-semibold text-sm">${escapeHtml(act.emoji)} ${escapeHtml(act.name)}</span>
+              <span class="flex items-center gap-2">
+                <span class="text-white/40 text-xs">${cur>0?cur+'/5':''}</span>
+                <button onclick="removeActivity(${safeId})" class="text-white/20 hover:text-red-400 transition-all text-xs">✕</button>
+              </span>
+            </div>
+            <div class="flex gap-1 justify-center">${stars}</div>
+          </div>`;
+        });
+      });
+      container.innerHTML = html;
+    }
+
+    // ---- History ----
+    function saveHistorySnapshot(user, total) {
+      if (!scoreData.history[user]) scoreData.history[user] = [];
+      const today = new Date().toISOString().slice(0, 10);
+      const idx = scoreData.history[user].findIndex(h => h.date === today);
+      if (idx >= 0) scoreData.history[user][idx].total = total;
+      else {
+        scoreData.history[user].push({ date: today, total });
+        if (scoreData.history[user].length > 30) scoreData.history[user].shift();
+      }
+    }
+
+    function renderHistory() {
+      const hist = scoreData.history[currentUser] || [];
+      const last7 = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const date = d.toISOString().slice(0, 10);
+        const entry = hist.find(h => h.date === date);
+        last7.push({ date, total: entry ? entry.total : null });
+      }
+      const maxVal = Math.max(...last7.map(d => d.total || 0), SCORE_TARGET);
+      document.getElementById('history-chart').innerHTML = last7.map(d => {
+        const h = d.total !== null ? Math.max(6, Math.round((d.total / maxVal) * 100)) : 6;
+        const color = d.total === null ? 'rgba(255,255,255,0.1)'
+          : d.total >= SCORE_TARGET ? 'linear-gradient(to top, #22c55e, #16a34a)'
+          : 'linear-gradient(to top, #6366f1, #a78bfa)';
+        return `<div class="flex-1 flex flex-col items-center justify-end gap-0.5">
+          <span class="text-white/40 text-xs">${d.total!==null?d.total:''}</span>
+          <div class="w-full rounded-t-md" style="height:${h}%;background:${color}"></div>
+        </div>`;
+      }).join('');
+      document.getElementById('history-dates').innerHTML = last7.map(d => {
+        const day = new Date(d.date + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'short' });
+        return `<div class="flex-1 text-center text-white/30 text-xs">${day}</div>`;
+      }).join('');
+      const listEl = document.getElementById('history-list');
+      if (hist.length === 0) {
+        listEl.innerHTML = '<p class="text-white/40 text-center text-sm py-4">Nessuno storico ancora</p>';
+        return;
+      }
+      listEl.innerHTML = [...hist].reverse().slice(0, 10).map(h => {
+        const d = new Date(h.date + 'T12:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+        const tokens = Math.min(Math.floor(h.total / 5), 5);
+        return `<div class="glass-effect rounded-xl px-4 py-3 flex justify-between items-center">
+          <span class="text-white/60 text-sm">${d}</span>
+          <span>${'⭐'.repeat(tokens)}</span>
+          <span class="text-white font-bold">${h.total} pt</span>
         </div>`;
       }).join('');
     }
 
-    function renderScoresView() {
-      renderUsers();
-      if (currentUser) {
-        document.getElementById('score-panel').classList.remove('hidden');
-        document.getElementById('score-user-name').textContent = currentUser;
-        renderActivities();
-        updateScoreDisplay();
-      }
+    function switchScoreTab(tab) {
+      currentScoreTab = tab;
+      document.getElementById('score-activities-view').classList.toggle('hidden', tab !== 'activities');
+      document.getElementById('score-history-view').classList.toggle('hidden', tab !== 'history');
+      document.querySelectorAll('.score-tab').forEach(btn => {
+        btn.style.background = '';
+        btn.classList.add('text-white/60'); btn.classList.remove('text-white');
+      });
+      const activeTab = document.getElementById('tab-' + tab);
+      activeTab.style.background = 'rgba(255,255,255,0.2)';
+      activeTab.classList.remove('text-white/60'); activeTab.classList.add('text-white');
+      if (tab === 'history') renderHistory();
     }
 
-    function showReinforcement(user, total) {
+    // ---- Reinforcement ----
+    function showReinforcement(user, total, milestone) {
+      playReinforcement();
+      const msgs = ['Fantastico! Continua così! 🎉','Sei un campione! 🏆','Bravissimo! Ottimo lavoro! 🌈','Incredibile! Sei il migliore! ⭐','Straordinario! 🎊'];
       document.getElementById('reinforcement-subtitle').textContent =
-        `${user} ha raggiunto ${total} punti! Bravissimo! 🎉`;
+        `${user} ha raggiunto ${milestone} punti! ${msgs[Math.floor(Math.random()*msgs.length)]}`;
       document.getElementById('reinforcement-message').classList.remove('hidden');
     }
 
     function closeReinforcement() {
       document.getElementById('reinforcement-message').classList.add('hidden');
+    }
+
+    // ---- Export / Import ----
+    function exportData() {
+      const blob = new Blob([JSON.stringify(scoreData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'punteggi_' + new Date().toISOString().slice(0, 10) + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.users && data.activities && data.scores) {
+            scoreData = { history: {}, reinforcementLevel: {}, ...data };
+            saveScoreData();
+            currentUser = null;
+            document.getElementById('score-panel').classList.add('hidden');
+            renderScoresView();
+          }
+        } catch(err) { alert('File non valido'); }
+        event.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function renderScoresView() {
+      renderUsers();
+      if (currentUser && scoreData.users.includes(currentUser)) {
+        document.getElementById('score-panel').classList.remove('hidden');
+        document.getElementById('score-user-name').textContent = currentUser;
+        renderActivities();
+        updateScoreDisplay();
+        if (currentScoreTab === 'history') renderHistory();
+      }
     }
 
     // ============ INIT ============
