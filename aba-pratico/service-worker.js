@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_VERSION = "aba-pratico-pwa-v2-3";
+const CACHE_VERSION = "aba-pratico-pwa-v2-4";
 const APP_SHELL = [
   "./",
   "./index.html",
