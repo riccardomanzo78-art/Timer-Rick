@@ -1,9 +1,82 @@
 "use strict";
-const CACHE_VERSION = "aba-pratico-pwa-v2-5-white-icons";
-const APP_SHELL = ["./manifest.webmanifest","./icon-192.png","./icon-512.png","./icon-maskable-512.png","./apple-touch-icon-180.png"];
-const WHITE_ICON_PATCH = `<script id="aba-white-icon-patch">(()=>{const T=new Set(["SI","NO","ANCORA"]);function f(img){if(!img||img.dataset.whiteBgFixed==="1")return;const c=img.closest(".caa-card"),l=c?.querySelector(".label")?.textContent?.trim()?.toUpperCase();if(!T.has(l))return;const a=()=>{if(img.dataset.whiteBgFixed==="1")return;try{const cv=document.createElement("canvas"),s=256;cv.width=s;cv.height=s;const x=cv.getContext("2d",{willReadFrequently:true});if(!x)return;x.fillStyle="#fff";x.fillRect(0,0,s,s);x.drawImage(img,0,0,s,s);const im=x.getImageData(0,0,s,s),d=im.data;for(let i=0;i<d.length;i+=4){const r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);if(mx<115&&mx-mn<55){d[i]=255;d[i+1]=255;d[i+2]=255;d[i+3]=255}}x.putImageData(im,0,0);img.dataset.whiteBgFixed="1";img.src=cv.toDataURL("image/png")}catch(e){console.warn("Correzione sfondo pittogramma non disponibile",e)}};if(img.complete&&img.naturalWidth>0)a();else img.addEventListener("load",a,{once:true})}function s(root=document){root.querySelectorAll?.(".caa-card .symbol--img").forEach(f)}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",()=>s(),{once:true}):s();new MutationObserver(rs=>{for(const r of rs)for(const n of r.addedNodes){if(!(n instanceof Element))continue;if(n.matches?.(".caa-card .symbol--img"))f(n);s(n)}}).observe(document.documentElement,{childList:true,subtree:true})})();</script>`;
-function patchIndexHtml(html){if(!html||html.includes('id="aba-white-icon-patch"'))return html;return html.includes("</body>")?html.replace("</body>",WHITE_ICON_PATCH+"\n</body>"):html+WHITE_ICON_PATCH}
-function patchedHtmlResponse(html,response){const h=new Headers(response?.headers||{});h.set("Content-Type","text/html; charset=utf-8");return new Response(patchIndexHtml(html),{status:response?.status||200,statusText:response?.statusText||"OK",headers:h})}
-self.addEventListener("install",e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE_VERSION);await c.addAll(APP_SHELL);try{const r=await fetch(new Request("./index.html",{cache:"reload"})),t=await r.text(),p=patchedHtmlResponse(t,r);await c.put("./index.html",p.clone());await c.put("./",p.clone())}catch(err){console.warn("Precache index non riuscita",err)}await self.skipWaiting()})())});
-self.addEventListener("activate",e=>{e.waitUntil((async()=>{const ks=await caches.keys();await Promise.all(ks.filter(k=>k.startsWith("aba-pratico-pwa-")&&k!==CACHE_VERSION).map(k=>caches.delete(k)));await self.clients.claim()})())});
-self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;const r=e.request;if(r.mode==="navigate"){e.respondWith((async()=>{try{const n=await fetch(r),t=await n.text(),p=patchedHtmlResponse(t,n),c=await caches.open(CACHE_VERSION);await c.put("./index.html",p.clone());await c.put("./",p.clone());return p}catch(err){const c=await caches.match("./index.html")||await caches.match("./");if(c)return c;throw err}})());return}e.respondWith((async()=>{const c=await caches.match(r);if(c)return c;const n=await fetch(r);if(n&&n.status===200&&n.type!=="opaque"){const cp=n.clone(),ca=await caches.open(CACHE_VERSION);await ca.put(r,cp)}return n})())});
+
+const CACHE_VERSION = "caa-2026-pwa-v2-6";
+const APP_SHELL = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./icon-maskable-512.png",
+  "./apple-touch-icon-180.png"
+];
+
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches
+      .open(CACHE_VERSION)
+      .then(cache => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then(keys =>
+        Promise.all(
+          keys
+            .filter(key =>
+              key.startsWith("caa-2026-pwa-") || key.startsWith("aba-pratico-pwa-") &&
+              key !== CACHE_VERSION
+            )
+            .map(key => caches.delete(key))
+        )
+      )
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener("fetch", event => {
+  if (event.request.method !== "GET") return;
+
+  const request = event.request;
+
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE_VERSION)
+            .then(cache => cache.put("./index.html", copy));
+          return response;
+        })
+        .catch(() =>
+          caches.match("./index.html")
+            .then(cached => cached || caches.match("./"))
+        )
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then(cached => {
+      if (cached) return cached;
+
+      return fetch(request).then(response => {
+        if (
+          response &&
+          response.status === 200 &&
+          response.type !== "opaque"
+        ) {
+          const copy = response.clone();
+          caches.open(CACHE_VERSION)
+            .then(cache => cache.put(request, copy));
+        }
+
+        return response;
+      });
+    })
+  );
+});
