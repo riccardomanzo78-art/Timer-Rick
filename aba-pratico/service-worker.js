@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_VERSION = "caa-2026-pwa-v2-8-9-pittogrammi-ancora-piu-grandi";
+const CACHE_VERSION = "caa-2026-pwa-v2-8-11-final-pittogrammi-completi";
 const APP_SHELL = [
   "./",
   "./index.html",
