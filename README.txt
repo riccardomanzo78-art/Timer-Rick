@@ -1,7 +1,7 @@
-CAA 2026 - HOTFIX v2.8.8
+CAA 2026 - HOTFIX v2.8.9
 
 Modifica inclusa:
-- ingranditi i pittogrammi grafici modificati nelle sezioni Comunicatore e Agenda Visiva
+- pittogrammi modificati ulteriormente ingranditi nelle sezioni Comunicatore e Agenda Visiva
 - nessun doppio bordo interno
 
 File da caricare su GitHub nella cartella aba-pratico:
