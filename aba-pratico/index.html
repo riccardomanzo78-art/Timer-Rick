@@ -180,19 +180,34 @@
       height: 96px;
     }
 
+    .symbol--img--large-picto {
+      width: 118px;
+      height: 118px;
+    }
+
     .symbol--img--scrivi {
-      width: 92px;
-      height: 92px;
+      width: 114px;
+      height: 114px;
+    }
+
+    .agenda-card-visual--large-picto {
+      width: 116px;
+      height: 100px;
     }
 
     .agenda-card-visual--scrivi {
-      width: 96px;
-      height: 82px;
+      width: 116px;
+      height: 100px;
+    }
+
+    .activity-picker-card img.activity-picker-img--large-picto {
+      width: 108px;
+      height: 96px;
     }
 
     .activity-picker-card img.activity-picker-img--scrivi {
-      width: 90px;
-      height: 82px;
+      width: 108px;
+      height: 96px;
     }
 
     .spoken {
@@ -610,19 +625,34 @@
         height: 66px;
       }
 
+      .symbol--img--large-picto {
+        width: 108px;
+        height: 108px;
+      }
+
       .symbol--img--scrivi {
-        width: 88px;
-        height: 88px;
+        width: 104px;
+        height: 104px;
+      }
+
+      .agenda-card-visual--large-picto {
+        width: 102px;
+        height: 86px;
       }
 
       .agenda-card-visual--scrivi {
-        width: 78px;
-        height: 66px;
+        width: 102px;
+        height: 86px;
+      }
+
+      .activity-picker-card img.activity-picker-img--large-picto {
+        width: 96px;
+        height: 84px;
       }
 
       .activity-picker-card img.activity-picker-img--scrivi {
-        width: 78px;
-        height: 70px;
+        width: 96px;
+        height: 84px;
       }
 
       .agenda-toolbar,
@@ -1196,6 +1226,12 @@ function speak(text) {
   }, 40);
 }
 
+const LARGE_PICTOGRAM_KEYS = new Set(["bagno", "scrivi", "yoga", "barba", "capelli", "unghie", "fieno_cavalli", "acqua_cavalli", "denti"]);
+
+function isLargePictogramKey(key) {
+  return LARGE_PICTOGRAM_KEYS.has(key);
+}
+
 function createCAACard(item) {
   const button = document.createElement("button");
   button.type = "button";
@@ -1214,6 +1250,7 @@ function createCAACard(item) {
   if (item.img) {
     const img = document.createElement("img");
     img.className = "symbol--img";
+    if (isLargePictogramKey(item.key)) img.classList.add("symbol--img--large-picto");
     if (item.key === "scrivi") img.classList.add("symbol--img--scrivi");
     img.src = item.img;
     img.alt = "";
@@ -1594,6 +1631,7 @@ function createAgendaCard(item) {
 
   const visual = document.createElement("img");
   visual.className = "agenda-card-visual";
+  if (isLargePictogramKey(item.id)) visual.classList.add("agenda-card-visual--large-picto");
   if (item.id === "scrivi") visual.classList.add("agenda-card-visual--scrivi");
   visual.src = item.img;
   visual.alt = "";
@@ -1733,6 +1771,7 @@ function renderActivityPicker() {
 
     const image = document.createElement("img");
     image.src = activity.img;
+    if (isLargePictogramKey(activity.id)) image.classList.add("activity-picker-img--large-picto");
     if (activity.id === "scrivi") image.classList.add("activity-picker-img--scrivi");
     image.alt = "";
     image.setAttribute("aria-hidden", "true");
