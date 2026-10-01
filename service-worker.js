@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_VERSION = "caa-2026-pwa-v2-7-1-fix";
+const CACHE_VERSION = "caa-2026-pwa-v2-7-2";
 const APP_SHELL = [
   "./",
   "./index.html",
