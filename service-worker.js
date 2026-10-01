@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_VERSION = "aba-pratico-pwa-v2-4";
+const CACHE_VERSION = "caa-2026-pwa-v2-7-1-fix";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -28,7 +28,7 @@ self.addEventListener("activate", event => {
         Promise.all(
           keys
             .filter(key =>
-              key.startsWith("aba-pratico-pwa-") &&
+              (key.startsWith("caa-2026-pwa-") || key.startsWith("aba-pratico-pwa-")) &&
               key !== CACHE_VERSION
             )
             .map(key => caches.delete(key))
