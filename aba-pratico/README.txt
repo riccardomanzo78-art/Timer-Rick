@@ -1,15 +1,13 @@
-CAA 2026 - aggiornamento con 6 nuovi pittogrammi
+PACCHETTO CORRETTO SENZA DOPPIO BORDO
 
-File da caricare/sostituire nella cartella del repository GitHub che pubblica l'app (aba-pratico):
+Contenuto:
 - index.html
 - service-worker.js
 - manifest.webmanifest
-- apple-touch-icon-180.png
 - icon-192.png
 - icon-512.png
 - icon-maskable-512.png
+- apple-touch-icon-180.png
 
-Dopo il caricamento:
-1. apri l'app
-2. fai un aggiornamento forzato / svuota cache se necessario
-3. se l'app era già installata, chiudila e riaprila
+Da caricare nella cartella del progetto GitHub Pages che usi per l'app, sostituendo i file esistenti.
+Dopo il caricamento, apri il link dell'app e fai un aggiornamento forzato del browser se necessario.
