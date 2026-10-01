@@ -1,14 +1,15 @@
-CAA 2026 PWA v2.7.1 FIX
+CAA 2026 - aggiornamento con 6 nuovi pittogrammi
 
-Correzioni:
-- corretto errore JavaScript che impediva il caricamento del comunicatore
-- SCRIVI presente in fondo al Comunicatore
-- SCRIVI presente tra le attività dell Agenda Visiva
-- corretto header: CAA 2026 con DI RICCARDO MANZO sotto e più piccolo
-- cache aggiornata
+File da caricare/sostituire nella cartella del repository GitHub che pubblica l'app (aba-pratico):
+- index.html
+- service-worker.js
+- manifest.webmanifest
+- apple-touch-icon-180.png
+- icon-192.png
+- icon-512.png
+- icon-maskable-512.png
 
-
-Aggiornamento v2.7.3 SCRIVI FIX:
-- Pittogramma SCRIVI aggiornato senza bordino interno e senza testo duplicato nell'immagine.
-- Pittogramma SCRIVI leggermente ingrandito nel Comunicatore CAA, nell'Agenda visiva e nel selettore attività.
-- Service worker aggiornato per forzare il refresh della PWA.
+Dopo il caricamento:
+1. apri l'app
+2. fai un aggiornamento forzato / svuota cache se necessario
+3. se l'app era già installata, chiudila e riaprila
